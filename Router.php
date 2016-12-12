@@ -6,7 +6,7 @@
  * Time: 22:11
  */
 
-//namespace liwd;
+namespace liwd;
 
 class Router extends Exception
 {

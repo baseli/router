@@ -7,7 +7,7 @@
  * 收集数据
  */
 
-//namespace liwd;
+namespace liwd;
 
 class Data
 {

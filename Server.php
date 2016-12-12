@@ -6,7 +6,7 @@
  * Time: 22:17
  */
 
-//namespace liwd;
+namespace liwd;
 
 class Server
 {
