@@ -6,18 +6,21 @@
  * Time: 22:11
  */
 
-namespace liwd;
+//namespace liwd;
 
-class Router
+class Router extends Exception
 {
     private $server;
+    private $data;
+    private $matchVariable = '/\:[a-zA-Z0-9]+/';
 
     public function __construct()
     {
-        $this->server = new Router($_SERVER);
+        $this->server = new Server($_SERVER);
+        $this->data = new Data();
     }
 
-    public function on($method, $pattern, $callback)
+    public function on($method, $pattern, $useDir = false, $callback)
     {
         // adjust the method, if not include, return 404
         $this->adjustMethod($method);
@@ -49,9 +52,27 @@ class Router
         }
     }
 
-    private function adjustPattern($pattern)
+    public function adjustPattern($pattern, $useDir)
     {
         $selfUri = $this->server->getUri();
-        $dirName = $this->server->getDirName();
+        $diff = $this->getDifferenceInDocumentRootAndDirectory();
+
+        if (false !== $useDir) {
+            $selfUri = substr($selfUri, strlen($diff), strlen($selfUri));
+        }
+
+        return $selfUri;
     }
+
+    private function getDifferenceInDocumentRootAndDirectory()
+    {
+        $documentRoot = $this->server->getDocumentRoot();
+        $directoryName = $this->server->getDirName();
+
+        $uriLength = strlen($directoryName);
+        $documentRootLength = strlen($documentRoot);
+
+        return substr($directoryName, $documentRootLength, $uriLength);
+    }
+
 }

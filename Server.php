@@ -6,9 +6,9 @@
  * Time: 22:17
  */
 
-namespace liwd;
+//namespace liwd;
 
-class Router
+class Server
 {
     private $server;
 
@@ -29,6 +29,11 @@ class Router
 
     public function getDirName()
     {
-        return dirname($this->server['SCRIPT_NAME']);
+        return dirname($this->server['SCRIPT_FILENAME']) . DIRECTORY_SEPARATOR;
+    }
+
+    public function getDocumentRoot()
+    {
+        return $this->server['CONTEXT_DOCUMENT_ROOT'];
     }
 }
