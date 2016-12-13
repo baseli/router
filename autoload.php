@@ -8,7 +8,7 @@
 
 spl_autoload_register(function($class) {
     $class = str_replace('liwd\\', '', $class);
-    $filePath = __DIR__ . DIRECTORY_SEPARATOR . DIRECTORY_SEPARATOR . $class . '.php';
+    $filePath = __DIR__ . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . $class . '.php';
 
     include $filePath;
 });
