@@ -8,34 +8,91 @@
 
 namespace liwd;
 
-use SplQueue;
-
 class Router
 {
     private $server;
     private $request;
+    private $response;
+    private $createRoute;
+
     private $matchVariable = '/\:\w+/';
     private $matchedStr = '\w+';
-    private $routeQueue;
 
     public function __construct()
     {
-        $this->server = new Server($_SERVER);
+        $this->server = new Server();
         $this->request = new Request();
-        $this->routeQueue = new SplQueue();
+        $this->response = new Response();
+        $this->createRoute = new CreateRoute();
     }
 
+    /**
+     * 需要监听的规则
+     * @param $method
+     * @param $pattern
+     * @param bool $useDir
+     * @param $callback
+     */
     public function on($method, $pattern, $useDir = false, $callback)
     {
-        // adjust the method, if not include, return 404
-        $this->adjustMethod($method);
+        $this->createRoute->setRoute($method, $pattern, $useDir, $callback);
+    }
+
+    /**
+     * 进行路由的分发
+     */
+    public function dispatch()
+    {
+        $result = true;
+        $body = '';
+
+        $routeQueue = $this->createRoute->getRoute();
+
+        foreach($routeQueue as $value) {
+            $result = $this->adjustAll($value);
+
+            if (true === $result) {
+                // 进行相关参数的匹配
+                if (true === $value['useDir']) {
+                    $uri = $this->getAbsolutePath();
+
+                    $this->matchPattern($value['path'], $uri);
+                } else {
+                    $this->matchPattern($value['path'], $this->server->getUri());
+                }
+
+                if (is_callable($value['callback'])) {
+                    $body = $value['callback']($this->request, $this->response);
+                }
+                break 1;
+            }
+        };
+
+        if (false === $result) {
+            $this->response->notAllowed();
+        }
+
+        $this->response->body($body);
+    }
 
 
+    private function adjustAll($route)
+    {
+        $useDir = $route['useDir'];
+        $method = $route['method'];
+        $pattern = $route['path'];
+
+        $result = $this->adjustPattern($pattern, $useDir);
+
+        $result = $this->adjustMethod($method) && $result;
+
+        return $result;
     }
 
     /**
      * 判断是否是允许访问的http方法
      * @param $method
+     * @return bool
      */
     private function adjustMethod($method)
     {
@@ -52,12 +109,16 @@ class Router
             }
 
             if (!$flag) {
-                header('HTTP1.1 404 Not Found!');
+                return false;
             }
+
+            return true;
         } else {
             if (strtoupper($method) != $selfMethod) {
-                header('HTTP1.1 404 Not Found!');
+                return false;
             }
+
+            return true;
         }
     }
 
@@ -67,7 +128,7 @@ class Router
      * @param $useDir
      * @return bool
      */
-    public function adjustPattern($pattern, $useDir)
+    private function adjustPattern($pattern, $useDir)
     {
         $selfUri = $this->server->getUri();
         $isRegular = $this->checkIsRegular($pattern);
@@ -96,10 +157,8 @@ class Router
      * @param $pattern
      * @param $uri
      */
-    public function matchPattern($pattern, $uri)
+    private function matchPattern($pattern, $uri)
     {
-        $matchedParam = [];
-
         $patternExplode = explode('/', $pattern);
         $uriExplode = explode('/', $uri);
 
@@ -173,5 +232,16 @@ class Router
         $documentRootLength = strlen($documentRoot);
 
         return substr($directoryName, $documentRootLength, $uriLength);
+    }
+
+    private function getAbsolutePath()
+    {
+        $uri = $this->server->getUri();
+
+        $diff = $this->getDifferenceInDocumentRootAndDirectory();
+
+        $uri = substr($uri, strlen($diff), strlen($uri));
+
+        return $uri;
     }
 }

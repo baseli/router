@@ -12,9 +12,9 @@ class Server
 {
     private $server;
 
-    public function __construct($serverInfo)
+    public function __construct()
     {
-        $this->server = $serverInfo;
+        $this->server = $_SERVER;
     }
 
     public function getUri()
