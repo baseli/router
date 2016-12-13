@@ -9,7 +9,7 @@
 
 namespace liwd;
 
-class Data
+class Request
 {
     private $paramData = [];
     private $bodyData = null;
@@ -43,5 +43,15 @@ class Data
     public function file()
     {
         return $_FILES;
+    }
+
+    public function setItem($key, $value)
+    {
+        $this->$key = $value;
+    }
+
+    public function getItem($key)
+    {
+        return $this->$key;
     }
 }
