@@ -46,7 +46,13 @@ class Response
 
     public function json($body)
     {
+        header('Content-Type: application/json;');
 
+        if (is_array($body)) {
+            $body = json_encode($body);
+        }
+
+        $this->body($body);
     }
 
     public function body($body)

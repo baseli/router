@@ -130,7 +130,7 @@ class Router
      */
     private function adjustPattern($pattern, $useDir)
     {
-        $selfUri = $this->server->getUri();
+        $selfUri = $this->removeQueryParamFromUri();
         $isRegular = $this->checkIsRegular($pattern);
 
         if (false !== $useDir) {
@@ -243,5 +243,22 @@ class Router
         $uri = substr($uri, strlen($diff), strlen($uri));
 
         return $uri;
+    }
+
+    /**
+     * 去除uri中的参数部分
+     * @return string
+     */
+    private function removeQueryParamFromUri()
+    {
+        $uri = $this->server->getUri();
+
+        $delimiterPosition = strpos($uri, '?');
+
+        if (false !== $delimiterPosition) {
+            $uri = substr($uri, 0, $delimiterPosition);
+        }
+
+        return (string) $uri;
     }
 }

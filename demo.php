@@ -6,12 +6,16 @@
  * Time: 下午1:58
  */
 
+include 'autoload.php';
+
 use \liwd\Router;
 
 $route = new Router();
 
 $route->on(['get', 'post'], '/:controller/:method', true, function($request, $response) {
-    return $request->controller;
+    $controller = $request->controller;
+
+    return $controller;
 });
 
 $route->dispatch();
